@@ -1,66 +1,175 @@
 <template>
-  <v-container>
-    <v-form @submit.prevent="addData">
-      <v-text-field v-model="txt" label="Text" class="ma-2"></v-text-field>
-      <v-item-group class="d-inline-flex">
-        <v-checkbox
-          v-for="n in 3"
-          :key="n"
-          v-model="checkbox"
-          :label="`Checkbox ${n}`"
-          :value="n"
-          class="mr-5"
-        ></v-checkbox>
-      </v-item-group>
-      <v-radio-group v-model="radioGroup" row>
-        <v-radio
-          v-for="n in 3"
-          :key="n"
-          :label="`Radio ${n}`"
-          :value="n"
-        ></v-radio>
-      </v-radio-group>
-      <v-switch v-model="switcher" label="Switch On/Off" inset></v-switch>
-      <v-rating v-model="rating" label="Rating"></v-rating>
-      <v-slider v-model="slider" min="0" max="100" label="Slider"></v-slider>
-      <v-btn color="success" class="mr-4" @click="addData">Submit</v-btn>
-      <v-btn color="warning" class="mr-4" @click="reset"> Reset Form </v-btn>
-      <CollectionText />
-    </v-form>
-  </v-container>
+  <div>
+    <v-container>
+      <v-card>
+        <v-form ref="form" v-model="valid" @submit.prevent="addData">
+          <!--แบบฟอร์มให้กรอกข้อมูล-->
+          <v-row class="mb-6" justify="center">
+            <v-col lg="6">
+              <v-text-field
+                v-model="username"
+                :rules="usernameRules"
+                label="UserName"
+                required
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row class="mb-6" justify="center">
+            <v-col lg="6">
+              <v-text-field
+                v-model="email"
+                :rules="emailRules"
+                label="E-mail"
+                required
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row class="mb-6" justify="center">
+            <v-col lg="3">
+              <v-text-field
+                v-model="firstname"
+                :rules="nameRules"
+                :counter="10"
+                label="First name"
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col lg="3">
+              <v-text-field
+                v-model="lastname"
+                :rules="nameRules"
+                :counter="10"
+                label="Last name"
+                required
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row class="mb-6" justify="center">
+            <v-col lg="3">
+              <v-text-field
+                v-model="password"
+                :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+                :rules="passwordRules"
+                :type="show1 ? 'text' : 'password'"
+                name="input-10-1"
+                label="Password"
+                required
+                @click:append="show1 = !show1"
+              ></v-text-field>
+            </v-col>
+            <v-col lg="3">
+              <v-text-field
+                v-model="confirm"
+                block
+                :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+                :rules="[rules.required, passwordMatch]"
+                :type="show1 ? 'text' : 'password'"
+                name="input-10-1"
+                label="Confirm Password"
+                @click:append="show1 = !show1"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <!--ปุ่มฟังชั่นต่างๆ-->
+          <v-row justify="center">
+            <v-col lg="2" justify="center"
+              ><v-select
+                v-model="select"
+                :items="Gender"
+                :rules="[(v) => !!v || 'Gender is required']"
+                label="Gender"
+                required
+              ></v-select
+            ></v-col>
+          </v-row>
+          <v-row class="mb-6" justify="center">
+            <v-col lg="6">
+              <v-dialog v-model="dialog" width="500">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    :disabled="!valid"
+                    color="success"
+                    class="mr-4"
+                    v-bind="attrs"
+                    @click="addData"
+                    v-on="on"
+                  >
+                    Submit
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title class="headline grey lighten-2">
+                    ยืนยันการสมัครสมาชิก
+                  </v-card-title>
+                  <v-card-text> กดตกลงเพื่อยืนยันการสมัครสมาชิก </v-card-text>
+                  <v-divider></v-divider>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" text @click="dialog = false">
+                      ตกลง
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <v-btn color="error" class="mr-4" @click="reset">
+                Reset Form
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card>
+    </v-container>
+  </div>
 </template>
-
 <script>
 import firebase from 'firebase/app'
 import { db } from '~/plugins/firebaseConfig.js'
-import CollectionText from '~/components/CollectionText.vue'
 export default {
-  components: {
-    CollectionText,
-  },
-  data() {
-    return {
-      txt: '',
-      checkbox: [],
-      radioGroup: null,
-      switcher: false,
-      rating: 3,
-      slider: 20,
-    }
+  data: () => ({
+    valid: false,
+    username: '',
+    firstname: '',
+    lastname: '',
+    usernameRules: [
+      (v) => !!v || 'Username is requried',
+      (v) => v.length <= 12 || 'UserName must be less than 12 characters',
+    ],
+    nameRules: [
+      (v) => !!v || 'Name is required',
+      (v) => v.length <= 10 || 'Name must be less than 10 characters',
+    ],
+    email: '',
+    emailRules: [
+      (v) => !!v || 'E-mail is required',
+      (v) => /.+@.+/.test(v) || 'E-mail must be valid',
+    ],
+    password: '',
+    passwordRules: [(v) => !!v || 'Password is required'],
+    confirm: '',
+    select: null,
+    Gender: ['male', 'famale'],
+    show1: false,
+    checkbox: false,
+    dialog: false,
+  }),
+  computed: {
+    passwordMatch() {
+      return () => this.password === this.confirm || 'Password must match'
+    },
   },
   methods: {
     addData() {
-      // เก็บข้อมูล Form ใน collection MyForm ( มี 1 document แต่จะ update ข้อมูลเรื่อย ๆ )
       const data = {
-        txt: this.txt,
-        checkbox: this.checkbox,
-        radioGroup: this.radioGroup,
-        switcher: this.switcher,
-        rating: this.rating,
-        slider: this.slider,
+        username: this.username,
+        firstname: this.firstname,
+        lastname: this.lastname,
+        email: this.email,
+        password: this.password,
+        Gender: this.select,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       }
-      db.collection('MyForm')
-        .doc('formdata')
+      db.collection('register')
+        .doc()
         .set(data)
         .then(function () {
           // eslint-disable-next-line no-console
@@ -70,27 +179,15 @@ export default {
           // eslint-disable-next-line no-console
           console.error('Error writing document: ', error)
         })
-
-      // เก็บข้อมูล Input Text ใน collection MyText (มีหลาย document ข้อมูลจะเพิ่มขึ้นเรื่อย ๆ )
-      const dataText = {
-        txt: this.txt,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      }
-      db.collection('MyText')
-        .doc()
-        .set(dataText)
-        .then(function () {
-          // eslint-disable-next-line no-console
-          console.log('Document successfully written! -> MyText')
-        })
-        .catch(function (error) {
-          // eslint-disable-next-line no-console
-          console.error('Error writing document: ', error)
-        })
     },
-    reset() {},
+    reset() {
+      this.$refs.form.reset()
+    },
+    rules: {
+      required: (value) => !!value || 'Required.',
+      min: (v) => (v && v.length >= 8) || 'Min 8 characters',
+    },
   },
 }
 </script>
-
 <style></style>

@@ -71,25 +71,20 @@ export default {
       fixed: false,
       items: [
         {
-          icon: 'mdi-apps',
-          title: 'Welcome',
-          to: '/',
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire',
-        },
-        {
           icon: 'mdi-book-check-outline',
           title: 'DataBase',
           to: '/testdb',
+        },
+        {
+          icon: 'mdi-book-check-outline',
+          title: 'Check',
+          to: '/check',
         },
       ],
       miniVariant: false,
       right: true,
       rightDrawer: false,
-      title: 'Vuetify.js',
+      title: '',
     }
   },
 }
